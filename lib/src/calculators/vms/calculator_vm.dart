@@ -48,6 +48,7 @@ class CalculatorViewModel extends ChangeNotifier {
   TextEditingController rewardController = TextEditingController();
   TextEditingController basisController = TextEditingController();
   TextEditingController capitalController = TextEditingController();
+
   // price iteration for each pips
   double pipsIteration = 0.01;
 
@@ -60,7 +61,16 @@ class CalculatorViewModel extends ChangeNotifier {
   double profitOnTP = 0.0;
   int basis = 2;
   bool editable = false;
-  bool longOrder = true;
+  // bool longOrder = true;
+
+  bool _longOrder = true;
+
+  set longOrder(bool longOrder) {
+    _longOrder = longOrder;
+    notifyListeners();
+  }
+
+  bool get longOrder => _longOrder;
 
   void init() {
     SharedPreferences.getInstance().then(
@@ -155,7 +165,7 @@ class CalculatorViewModel extends ChangeNotifier {
 
   void onTpChanged() {
     final double entryPrice = double.tryParse(entryPriceController.text) ?? 0.0;
-    final int takeProfit = int.tryParse(takeProfitController.text) ?? 0;
+    final double takeProfit = double.tryParse(takeProfitController.text) ?? 0.0;
     double pips = (takeProfit - entryPrice) / pipsIteration;
     if (!longOrder) pips = (entryPrice - takeProfit) / pipsIteration;
     final String pipsInString = pips.toInt().toString();
@@ -184,5 +194,25 @@ class CalculatorViewModel extends ChangeNotifier {
     SharedPreferences.getInstance().then(
       (SharedPreferences prefs) => prefs.setString(key, value),
     );
+  }
+
+  void incrementValueByBasisPoint(
+    TextEditingController textEditingController, {
+    int? basis,
+  }) {
+    basis ??= this.basis;
+    textEditingController.text =
+        ((double.tryParse(textEditingController.text) ?? 0.0) + pipsIteration)
+            .toStringAsFixed(basis);
+  }
+
+  void decrementValueByBasisPoint(
+    TextEditingController textEditingController, {
+    int? basis,
+  }) {
+    basis ??= this.basis;
+    textEditingController.text =
+        ((double.tryParse(textEditingController.text) ?? 0.0) - pipsIteration)
+            .toStringAsFixed(basis);
   }
 }

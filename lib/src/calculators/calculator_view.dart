@@ -34,149 +34,9 @@ class _RiskCalculatorViewState extends ConsumerState<RiskCalculatorView> {
             body: ListView(
               padding: const EdgeInsets.all(16),
               children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      flex: 3,
-                      child: TextField(
-                        controller: stateWatcher.capitalController,
-                        decoration: InputDecoration(
-                          border: _textFieldBorder,
-                          labelText: 'capital',
-                          prefixText: '\$',
-                        ),
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        onChanged: (String value) =>
-                            stateWatcher.cache(capitalKey, value),
-                        textInputAction: TextInputAction.next,
-                        onSubmitted: (_) => stateWatcher.calculate(),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: TextField(
-                        controller: stateWatcher.riskController,
-                        decoration: InputDecoration(
-                          border: _textFieldBorder,
-                          labelText: 'Risk',
-                          suffixText: '%',
-                        ),
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        onChanged: (String value) {
-                          String newValue = value;
-                          if ((num.tryParse(value) ?? 0) > 100) {
-                            stateWatcher.riskController.text = '100';
-                            newValue = '100';
-                          }
-                          stateWatcher.cache(riskKey, newValue);
-                          stateWatcher.calculate();
-                        },
-                        textInputAction: TextInputAction.next,
-                        onSubmitted: (_) => stateWatcher.calculate(),
-                      ),
-                    ),
-                    const SizedBox(width: 16.0),
-                    Expanded(
-                      child: TextField(
-                        controller: stateWatcher.basisController,
-                        maxLength: 1,
-                        decoration: InputDecoration(
-                          border: _textFieldBorder,
-                          labelText: basisKey,
-                          counterText: '',
-                          hintText: '1 - 9',
-                          suffix: const Tooltip(
-                            message: 'Basis is the number of decimal places '
-                                'for the price of the asset. '
-                                '\nFor example: EURJPY is 3, '
-                                'BTCUSD is 1, XAUUSD is 2, EURGBP is 5, etc.',
-                            child: Icon(
-                              Icons.info_rounded,
-                            ),
-                          ),
-                        ),
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: false,
-                        ),
-                        textInputAction: TextInputAction.next,
-                        onSubmitted: (_) => stateWatcher.onBasisChanged(),
-                      ),
-                    ),
-                  ],
-                ),
+                capitalRiskAndBasis(stateWatcher),
                 const SizedBox(height: 16),
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      flex: flexSize,
-                      child: TextField(
-                        controller: stateWatcher.entryPriceController,
-                        decoration: InputDecoration(
-                          border: _textFieldBorder,
-                          labelText: 'Entry Price',
-                        ),
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        onChanged: (String value) {
-                          stateWatcher.cache(entryPriceKey, value);
-
-                          stateWatcher.editable =
-                              stateWatcher.entryPriceController.text.isEmpty;
-
-                          stateWatcher.onSlPipsChanged();
-                          stateWatcher.onTpPipsChanged();
-                        },
-                        textInputAction: TextInputAction.next,
-                        onSubmitted: (_) => stateWatcher.calculate(),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: SwitchListTile(
-                        value: stateWatcher.longOrder,
-                        focusNode: FocusNode(
-                          skipTraversal: true,
-                          descendantsAreTraversable: false,
-                        ),
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(16.0)),
-                        ),
-                        onChanged: (bool value) {
-                          setState(() {
-                            stateWatcher.longOrder = value;
-                          });
-
-                          if (stateWatcher
-                              .entryPriceController.text.isNotEmpty) {
-                            stateWatcher.onSlPipsChanged();
-                          }
-                          if (stateWatcher
-                              .entryPriceController.text.isNotEmpty) {
-                            stateWatcher.onTpPipsChanged();
-                          }
-
-                          stateWatcher.cache(longOrderKey, value.toString());
-
-                          stateWatcher.calculate();
-                        },
-                        title: Builder(
-                          builder: (BuildContext context) {
-                            if (stateWatcher.longOrder) {
-                              return const Text('Long');
-                            } else {
-                              return const Text('Short');
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                entryPriceAndOrderSwitch(flexSize, stateWatcher),
                 const SizedBox(height: 16),
                 // TP/SL with pips
                 Row(
@@ -192,7 +52,6 @@ class _RiskCalculatorViewState extends ConsumerState<RiskCalculatorView> {
                           decimal: false,
                         ),
                         onChanged: (String value) {
-                          stateWatcher.cache(stopLossPipsKey, value);
                           stateWatcher.onSlPipsChanged();
                         },
                         textInputAction: TextInputAction.next,
@@ -212,7 +71,6 @@ class _RiskCalculatorViewState extends ConsumerState<RiskCalculatorView> {
                           decimal: false,
                         ),
                         onChanged: (String value) {
-                          stateWatcher.cache(takeProfitPipsKey, value);
                           stateWatcher.onTpPipsChanged();
                         },
                         textInputAction: TextInputAction.next,
@@ -237,7 +95,6 @@ class _RiskCalculatorViewState extends ConsumerState<RiskCalculatorView> {
                           decimal: true,
                         ),
                         onChanged: (String value) {
-                          stateWatcher.cache(stopLossKey, value);
                           stateWatcher.onSlChanged();
                         },
                         textInputAction: TextInputAction.next,
@@ -257,7 +114,6 @@ class _RiskCalculatorViewState extends ConsumerState<RiskCalculatorView> {
                           decimal: true,
                         ),
                         onChanged: (String value) {
-                          stateWatcher.cache(takeProfitKey, value);
                           stateWatcher.onTpChanged();
                         },
                         textInputAction: TextInputAction.next,
@@ -297,6 +153,140 @@ class _RiskCalculatorViewState extends ConsumerState<RiskCalculatorView> {
           ),
         );
       },
+    );
+  }
+
+  Row entryPriceAndOrderSwitch(int flexSize, CalculatorViewModel stateWatcher) {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          flex: flexSize,
+          child: TextField(
+            controller: stateWatcher.entryPriceController,
+            decoration: InputDecoration(
+              border: _textFieldBorder,
+              labelText: 'Entry Price',
+            ),
+            keyboardType: const TextInputType.numberWithOptions(
+              decimal: true,
+            ),
+            onChanged: (String value) {
+              stateWatcher.editable =
+                  stateWatcher.entryPriceController.text.isEmpty;
+
+              stateWatcher.onSlPipsChanged();
+              stateWatcher.onTpPipsChanged();
+            },
+            textInputAction: TextInputAction.next,
+            onSubmitted: (_) => stateWatcher.calculate(),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: SwitchListTile(
+            value: stateWatcher.longOrder,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16.0)),
+            ),
+            onChanged: (bool value) {
+              stateWatcher.longOrder = value;
+              stateWatcher.cache(longOrderKey, value.toString());
+
+              if (stateWatcher.entryPriceController.text.isNotEmpty) {
+                stateWatcher.onSlPipsChanged();
+                stateWatcher.onTpPipsChanged();
+              }
+
+              stateWatcher.calculate();
+            },
+            title: Builder(
+              builder: (BuildContext context) {
+                if (stateWatcher.longOrder) {
+                  return const Text('Long');
+                } else {
+                  return const Text('Short');
+                }
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Row capitalRiskAndBasis(CalculatorViewModel stateWatcher) {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          flex: 3,
+          child: TextField(
+            controller: stateWatcher.capitalController,
+            decoration: InputDecoration(
+              border: _textFieldBorder,
+              labelText: 'capital',
+              prefixText: '\$',
+            ),
+            keyboardType: const TextInputType.numberWithOptions(
+              decimal: true,
+            ),
+            onChanged: (String value) => stateWatcher.cache(capitalKey, value),
+            textInputAction: TextInputAction.next,
+            onSubmitted: (_) => stateWatcher.calculate(),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: TextField(
+            controller: stateWatcher.riskController,
+            decoration: InputDecoration(
+              border: _textFieldBorder,
+              labelText: 'Risk',
+              suffixText: '%',
+            ),
+            keyboardType: const TextInputType.numberWithOptions(
+              decimal: true,
+            ),
+            onChanged: (String value) {
+              String newValue = value;
+              if ((num.tryParse(value) ?? 0) > 100) {
+                stateWatcher.riskController.text = '100';
+                newValue = '100';
+              }
+              stateWatcher.cache(riskKey, newValue);
+              stateWatcher.calculate();
+            },
+            textInputAction: TextInputAction.next,
+            onSubmitted: (_) => stateWatcher.calculate(),
+          ),
+        ),
+        const SizedBox(width: 16.0),
+        Expanded(
+          child: TextField(
+            controller: stateWatcher.basisController,
+            maxLength: 1,
+            decoration: InputDecoration(
+              border: _textFieldBorder,
+              labelText: basisKey,
+              counterText: '',
+              hintText: '1 - 9',
+              suffix: const Tooltip(
+                message: 'Basis is the number of decimal places '
+                    'for the price of the asset. '
+                    '\nFor example: EURJPY is 3, '
+                    'BTCUSD is 1, XAUUSD is 2, EURGBP is 5, etc.',
+                child: Icon(
+                  Icons.info_rounded,
+                ),
+              ),
+            ),
+            keyboardType: const TextInputType.numberWithOptions(
+              decimal: false,
+            ),
+            textInputAction: TextInputAction.next,
+            onSubmitted: (_) => stateWatcher.onBasisChanged(),
+          ),
+        ),
+      ],
     );
   }
 }

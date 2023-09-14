@@ -105,6 +105,7 @@ class CalculatorViewModel extends ChangeNotifier {
     // round lot to pipsIteration decimal places
     lot = (lot / pipsIteration).round() * pipsIteration;
     if (lot < minimumLot) lot = minimumLot;
+    lot = double.parse(lot.toStringAsFixed(2));
 
     lossOnSL = lot * stopLossPips;
     lossOnSL = double.parse(lossOnSL.toStringAsFixed(basis));
@@ -113,7 +114,7 @@ class CalculatorViewModel extends ChangeNotifier {
     profitOnTP = double.parse(profitOnTP.toStringAsFixed(basis));
 
     if (stopLossPips > 0) rrr = takeProfitPips / stopLossPips;
-    if (rrr > 0) rrr = double.parse(rrr.toStringAsFixed(basis));
+    if (rrr > 0) rrr = double.parse(rrr.toStringAsFixed(1));
 
     notifyListeners();
   }

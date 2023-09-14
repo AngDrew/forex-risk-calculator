@@ -283,6 +283,7 @@ class _RiskCalculatorViewState extends ConsumerState<RiskCalculatorView> {
               decimal: false,
             ),
             textInputAction: TextInputAction.next,
+            onChanged: (_) => stateWatcher.onBasisChanged(),
             onSubmitted: (_) => stateWatcher.onBasisChanged(),
           ),
         ),

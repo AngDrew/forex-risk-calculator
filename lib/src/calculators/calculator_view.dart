@@ -183,30 +183,36 @@ class _RiskCalculatorViewState extends ConsumerState<RiskCalculatorView> {
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: SwitchListTile(
-            value: stateWatcher.longOrder,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(16.0)),
+          child: FocusScope(
+            parentNode: FocusNode(
+              descendantsAreFocusable: false,
+              descendantsAreTraversable: false,
             ),
-            onChanged: (bool value) {
-              stateWatcher.longOrder = value;
-              stateWatcher.cache(longOrderKey, value.toString());
+            child: SwitchListTile(
+              value: stateWatcher.longOrder,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(16.0)),
+              ),
+              onChanged: (bool value) {
+                stateWatcher.longOrder = value;
+                stateWatcher.cache(longOrderKey, value.toString());
 
-              if (stateWatcher.entryPriceController.text.isNotEmpty) {
-                stateWatcher.onSlPipsChanged();
-                stateWatcher.onTpPipsChanged();
-              }
-
-              stateWatcher.calculate();
-            },
-            title: Builder(
-              builder: (BuildContext context) {
-                if (stateWatcher.longOrder) {
-                  return const Text('Long');
-                } else {
-                  return const Text('Short');
+                if (stateWatcher.entryPriceController.text.isNotEmpty) {
+                  stateWatcher.onSlPipsChanged();
+                  stateWatcher.onTpPipsChanged();
                 }
+
+                stateWatcher.calculate();
               },
+              title: Builder(
+                builder: (BuildContext context) {
+                  if (stateWatcher.longOrder) {
+                    return const Text('Long');
+                  } else {
+                    return const Text('Short');
+                  }
+                },
+              ),
             ),
           ),
         ),

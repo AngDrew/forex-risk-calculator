@@ -86,6 +86,8 @@ class CalculatorViewModel extends ChangeNotifier {
         takeProfitController.text = prefs.getString(takeProfitKey) ?? '';
         riskController.text = prefs.getString(riskKey) ?? '1';
         longOrder = prefs.getString(longOrderKey) == 'true';
+
+        onBasisChanged(basisController.text);
         calculate();
       },
     );
@@ -119,13 +121,18 @@ class CalculatorViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void onBasisChanged() {
-    final String value = basisController.text;
+  void onBasisChanged(String value) {
+    if (value.isEmpty) return;
 
-    if (value.isEmpty || value == '0') return;
     basis = int.tryParse(value) ?? 2;
+
+    if (basis > 9) {
+      basis = 9;
+    } else if (basis < 1) {
+      basis = 1;
+    }
+
     pipsIteration = 1 / pow(10, basis).toDouble();
-    notifyListeners();
 
     double entryPrice = double.tryParse(entryPriceController.text) ?? 0.0;
     entryPriceController.text = entryPrice.toStringAsFixed(basis);
@@ -135,6 +142,17 @@ class CalculatorViewModel extends ChangeNotifier {
     onTpPipsChanged();
     cache(basisKey, value);
 
+    calculate();
+  }
+
+  void onRiskChanged(String value) {
+    String newValue = value;
+    if ((num.tryParse(value) ?? 0) > 100) {
+      riskController.text = '100';
+      newValue = '100';
+    }
+
+    cache(riskKey, newValue);
     calculate();
   }
 
@@ -179,8 +197,7 @@ class CalculatorViewModel extends ChangeNotifier {
 
   void onTpPipsChanged() {
     final double entryPrice = double.tryParse(entryPriceController.text) ?? 0.0;
-    final double takeProfitPips =
-        double.tryParse(takeProfitPipsController.text) ?? 0.0;
+    final int takeProfitPips = int.tryParse(takeProfitPipsController.text) ?? 0;
     final double takeProfit = takeProfitPips * pipsIteration;
     double price = entryPrice + takeProfit;
     if (!longOrder) price = entryPrice - takeProfit;

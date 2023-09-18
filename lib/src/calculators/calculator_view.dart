@@ -246,17 +246,9 @@ class _RiskCalculatorViewState extends ConsumerState<RiskCalculatorView> {
             keyboardType: const TextInputType.numberWithOptions(
               decimal: true,
             ),
-            onChanged: (String value) {
-              String newValue = value;
-              if ((num.tryParse(value) ?? 0) > 100) {
-                stateWatcher.riskController.text = '100';
-                newValue = '100';
-              }
-              stateWatcher.cache(riskKey, newValue);
-              stateWatcher.calculate();
-            },
+            onChanged: stateWatcher.onRiskChanged,
             textInputAction: TextInputAction.next,
-            onSubmitted: (_) => stateWatcher.calculate(),
+            onSubmitted: stateWatcher.onRiskChanged,
           ),
         ),
         const SizedBox(width: 16.0),
@@ -266,7 +258,7 @@ class _RiskCalculatorViewState extends ConsumerState<RiskCalculatorView> {
             maxLength: 1,
             decoration: InputDecoration(
               border: _textFieldBorder,
-              labelText: basisKey,
+              labelText: 'Basis',
               counterText: '',
               hintText: '1 - 9',
               suffix: const Tooltip(
@@ -283,8 +275,8 @@ class _RiskCalculatorViewState extends ConsumerState<RiskCalculatorView> {
               decimal: false,
             ),
             textInputAction: TextInputAction.next,
-            onChanged: (_) => stateWatcher.onBasisChanged(),
-            onSubmitted: (_) => stateWatcher.onBasisChanged(),
+            onChanged: stateWatcher.onBasisChanged,
+            onSubmitted: stateWatcher.onBasisChanged,
           ),
         ),
       ],

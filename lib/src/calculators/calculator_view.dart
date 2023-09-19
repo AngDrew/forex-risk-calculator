@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:risk_calculator/src/calculators/vms/calculator_vm.dart';
+import 'package:risk_calculator/src/calculators/vms/calculator_view_model.dart';
 
 import '../widgets/default_app_bar.dart';
 
-class RiskCalculatorView extends ConsumerStatefulWidget {
-  const RiskCalculatorView({super.key});
+class CalculatorView extends ConsumerStatefulWidget {
+  const CalculatorView({super.key});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
-      _RiskCalculatorViewState();
+      _CalculatorViewState();
 }
 
-class _RiskCalculatorViewState extends ConsumerState<RiskCalculatorView> {
+class _CalculatorViewState extends ConsumerState<CalculatorView> {
   final OutlineInputBorder _textFieldBorder =
       OutlineInputBorder(borderRadius: BorderRadius.circular(16.0));
 
@@ -21,7 +21,7 @@ class _RiskCalculatorViewState extends ConsumerState<RiskCalculatorView> {
     final stateWatcher = ref.watch(calculatorViewModel);
 
     return LayoutBuilder(
-      builder: (context, constraints) {
+      builder: (_, constraints) {
         int flexSize = 3;
         if (constraints.maxWidth < 600) {
           flexSize = 1;
@@ -129,8 +129,10 @@ class _RiskCalculatorViewState extends ConsumerState<RiskCalculatorView> {
                   child: const Text('Calculate'),
                 ),
                 const SizedBox(height: 32),
-                Text('Lot Size: ${stateWatcher.lot}',
-                    style: Theme.of(context).textTheme.titleLarge),
+                Text(
+                  'Lot Size: ${stateWatcher.lot}',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 const SizedBox(height: 8.0),
                 Text(
                   'Loss on SL: \$${stateWatcher.lossOnSL}',
@@ -146,8 +148,10 @@ class _RiskCalculatorViewState extends ConsumerState<RiskCalculatorView> {
                       .titleLarge
                       ?.copyWith(color: Colors.lightGreen),
                 ),
-                Text('RRR: 1 : ${stateWatcher.rrr}',
-                    style: Theme.of(context).textTheme.titleLarge),
+                Text(
+                  'RRR: 1 : ${stateWatcher.rrr}',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
               ],
             ),
           ),
@@ -208,9 +212,9 @@ class _RiskCalculatorViewState extends ConsumerState<RiskCalculatorView> {
                 builder: (BuildContext context) {
                   if (stateWatcher.longOrder) {
                     return const Text('Long');
-                  } else {
-                    return const Text('Short');
                   }
+
+                  return const Text('Short');
                 },
               ),
             ),
@@ -272,9 +276,7 @@ class _RiskCalculatorViewState extends ConsumerState<RiskCalculatorView> {
                     'for the price of the asset. '
                     '\nFor example: EURJPY is 3, '
                     'BTCUSD is 1, XAUUSD is 2, EURGBP is 5, etc.',
-                child: Icon(
-                  Icons.info_rounded,
-                ),
+                child: Icon(Icons.info_rounded),
               ),
             ),
             keyboardType: const TextInputType.numberWithOptions(

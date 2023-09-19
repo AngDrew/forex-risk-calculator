@@ -65,32 +65,29 @@ class CalculatorViewModel extends ChangeNotifier {
 
   bool _longOrder = true;
 
-  set longOrder(bool longOrder) {
-    _longOrder = longOrder;
+  set longOrder(bool value) {
+    _longOrder = value;
     notifyListeners();
   }
 
   bool get longOrder => _longOrder;
 
   void init() {
-    SharedPreferences.getInstance().then(
-      (SharedPreferences prefs) {
-        capitalController.text = prefs.getString(capitalKey) ?? '';
-        basisController.text = prefs.getString(basisKey) ?? '2';
-        basis = int.tryParse(basisController.text) ?? 2;
-        entryPriceController.text = prefs.getString(entryPriceKey) ?? '';
-        stopLossPipsController.text = prefs.getString(stopLossPipsKey) ?? '';
-        takeProfitPipsController.text =
-            prefs.getString(takeProfitPipsKey) ?? '';
-        stopLossController.text = prefs.getString(stopLossKey) ?? '';
-        takeProfitController.text = prefs.getString(takeProfitKey) ?? '';
-        riskController.text = prefs.getString(riskKey) ?? '1';
-        longOrder = prefs.getString(longOrderKey) == 'true';
+    SharedPreferences.getInstance().then((SharedPreferences prefs) {
+      capitalController.text = prefs.getString(capitalKey) ?? '';
+      basisController.text = prefs.getString(basisKey) ?? '2';
+      basis = int.tryParse(basisController.text) ?? 2;
+      entryPriceController.text = prefs.getString(entryPriceKey) ?? '';
+      stopLossPipsController.text = prefs.getString(stopLossPipsKey) ?? '';
+      takeProfitPipsController.text = prefs.getString(takeProfitPipsKey) ?? '';
+      stopLossController.text = prefs.getString(stopLossKey) ?? '';
+      takeProfitController.text = prefs.getString(takeProfitKey) ?? '';
+      riskController.text = prefs.getString(riskKey) ?? '1';
+      longOrder = prefs.getString(longOrderKey) == 'true';
 
-        onBasisChanged(basisController.text);
-        calculate();
-      },
-    );
+      onBasisChanged(basisController.text);
+      calculate();
+    });
   }
 
   void calculate() {
@@ -216,21 +213,21 @@ class CalculatorViewModel extends ChangeNotifier {
 
   void incrementValueByBasisPoint(
     TextEditingController textEditingController, {
-    int? basis,
+    int? basisValue,
   }) {
-    basis ??= this.basis;
+    basisValue ??= basis;
     textEditingController.text =
         ((double.tryParse(textEditingController.text) ?? 0.0) + pipsIteration)
-            .toStringAsFixed(basis);
+            .toStringAsFixed(basisValue);
   }
 
   void decrementValueByBasisPoint(
     TextEditingController textEditingController, {
-    int? basis,
+    int? basisValue,
   }) {
-    basis ??= this.basis;
+    basisValue ??= basis;
     textEditingController.text =
         ((double.tryParse(textEditingController.text) ?? 0.0) - pipsIteration)
-            .toStringAsFixed(basis);
+            .toStringAsFixed(basisValue);
   }
 }

@@ -40,23 +40,37 @@ class _CalculatorViewState extends ConsumerState<CalculatorView> {
                           child: ListView.separated(
                             scrollDirection: Axis.horizontal,
                             itemCount: stateWatcher.tabLength(),
-                            separatorBuilder: (_, index) => const SizedBox(width: 16.0),
+                            separatorBuilder: (_, index) => const VerticalDivider(width: 16.0),
                             itemBuilder: (_, index) {
-                              Text child =
+                              Widget child =
                                   Text('Basis ${stateWatcher.getDataOf(index)?.basis ?? '-'}');
 
-                              if (index == stateWatcher.currentTabIndex) {
-                                return OutlinedButton(
-                                  onPressed: null,
-                                  child: child,
-                                );
-                              }
-
-                              return OutlinedButton(
-                                onPressed: () {
-                                  stateWatcher.switchTabTo(index);
-                                },
-                                child: child,
+                              return Row(
+                                children: <Widget>[
+                                  ChoiceChip(
+                                    label: child,
+                                    onSelected: (value) {
+                                      stateWatcher.switchTabTo(index);
+                                    },
+                                    selected: index == stateWatcher.currentTabIndex,
+                                    showCheckmark: false,
+                                  ),
+                                  const SizedBox(width: 4.0),
+                                  InkWell(
+                                    onDoubleTap: () {
+                                      stateWatcher.deleteAt(index);
+                                    },
+                                    onTap: () {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Double tap to delete'),
+                                          duration: Duration(seconds: 1),
+                                        ),
+                                      );
+                                    },
+                                    child: const Icon(Icons.close_rounded, size: 20.0),
+                                  ),
+                                ],
                               );
                             },
                           ),

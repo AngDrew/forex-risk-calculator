@@ -5,18 +5,17 @@ part 'calculator_data_model.g.dart';
 @HiveType(typeId: 0)
 class CalculatorDataModel extends HiveObject {
   CalculatorDataModel({
-    this.entryPrice,
-    this.stopLoss,
-    this.stopLossPips,
-    this.takeProfit,
-    this.takeProfitPips,
-    this.lotSize,
-    this.risk,
-    this.reward,
-    this.basis,
-    this.capital,
-    this.longOrder,
-    this.tabName,
+    this.entryPrice = '',
+    this.stopLoss = '',
+    this.stopLossPips = '',
+    this.takeProfit = '',
+    this.takeProfitPips = '',
+    this.risk = '5',
+    this.reward = '',
+    this.basis = '2',
+    this.capital = '',
+    this.longOrder = 'true',
+    this.tabName = '',
   });
 
   @HiveField(0)
@@ -29,8 +28,7 @@ class CalculatorDataModel extends HiveObject {
   String? takeProfit;
   @HiveField(4)
   String? takeProfitPips;
-  @HiveField(5)
-  String? lotSize;
+  // @HiveField(5)
   @HiveField(6)
   String? risk;
   @HiveField(7)

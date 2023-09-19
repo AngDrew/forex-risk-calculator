@@ -22,7 +22,6 @@ class CalculatorDataModelAdapter extends TypeAdapter<CalculatorDataModel> {
       stopLossPips: fields[2] as String?,
       takeProfit: fields[3] as String?,
       takeProfitPips: fields[4] as String?,
-      lotSize: fields[5] as String?,
       risk: fields[6] as String?,
       reward: fields[7] as String?,
       basis: fields[8] as String?,
@@ -35,7 +34,7 @@ class CalculatorDataModelAdapter extends TypeAdapter<CalculatorDataModel> {
   @override
   void write(BinaryWriter writer, CalculatorDataModel obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.entryPrice)
       ..writeByte(1)
@@ -46,8 +45,6 @@ class CalculatorDataModelAdapter extends TypeAdapter<CalculatorDataModel> {
       ..write(obj.takeProfit)
       ..writeByte(4)
       ..write(obj.takeProfitPips)
-      ..writeByte(5)
-      ..write(obj.lotSize)
       ..writeByte(6)
       ..write(obj.risk)
       ..writeByte(7)

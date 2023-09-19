@@ -23,7 +23,6 @@ class CalculatorViewModel extends ChangeNotifier {
     stopLossPipsController.dispose();
     takeProfitController.dispose();
     takeProfitPipsController.dispose();
-    lotSizeController.dispose();
     riskController.dispose();
     rewardController.dispose();
     basisController.dispose();
@@ -35,7 +34,6 @@ class CalculatorViewModel extends ChangeNotifier {
   TextEditingController stopLossPipsController = TextEditingController();
   TextEditingController takeProfitController = TextEditingController();
   TextEditingController takeProfitPipsController = TextEditingController();
-  TextEditingController lotSizeController = TextEditingController();
   TextEditingController riskController = TextEditingController();
   TextEditingController rewardController = TextEditingController();
   TextEditingController basisController = TextEditingController();
@@ -91,22 +89,6 @@ class CalculatorViewModel extends ChangeNotifier {
     }
   }
 
-  CalculatorDataModel _defaultTabData = CalculatorDataModel(
-    basis: '2',
-    capital: '',
-    entryPrice: '',
-    longOrder: 'true',
-    risk: '5',
-    stopLoss: '',
-    stopLossPips: '',
-    takeProfit: '',
-    takeProfitPips: '',
-  );
-
-  set defaultTabData(CalculatorDataModel value) {
-    _defaultTabData = value;
-  }
-
   CalculatorDataModel currentTabData = CalculatorDataModel(
     basis: '2',
     capital: '',
@@ -148,7 +130,7 @@ class CalculatorViewModel extends ChangeNotifier {
     onBasisChanged(basisController.text);
   }
 
-  CalculatorDataModel? getDataOf(int index){
+  CalculatorDataModel? getDataOf(int index) {
     return _tabsBox?.values.elementAt(index);
   }
 
@@ -157,13 +139,11 @@ class CalculatorViewModel extends ChangeNotifier {
   }
 
   Future<void> newTab() async {
-    if (_defaultTabData == currentTabData) return;
-
     if (tabLength() == 0) {
-      await _tabsBox?.add(_defaultTabData);
+      await _tabsBox?.add(CalculatorDataModel());
     } else {
       await saveTab(currentTabIndex);
-      await _tabsBox?.add(_defaultTabData);
+      await _tabsBox?.add(CalculatorDataModel());
     }
 
     loadTab(tabLength() - 1);
@@ -178,6 +158,15 @@ class CalculatorViewModel extends ChangeNotifier {
   Future<void> deleteBox() async {
     await _tabsBox?.deleteFromDisk();
     init();
+    notifyListeners();
+  }
+
+  Future<void> deleteAt(int index) async {
+    if (index <= currentTabIndex) {
+      currentTabIndex--;
+      loadTab(currentTabIndex);
+    }
+    await _tabsBox?.deleteAt(index);
     notifyListeners();
   }
 

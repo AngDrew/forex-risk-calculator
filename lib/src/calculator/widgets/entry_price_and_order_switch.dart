@@ -28,13 +28,7 @@ class EntryPriceAndOrderSwitch extends StatelessWidget {
             keyboardType: const TextInputType.numberWithOptions(
               decimal: true,
             ),
-            onChanged: (String value) {
-              stateWatcher.editable =
-                  stateWatcher.entryPriceController.text.isEmpty;
-
-              stateWatcher.onSlPipsChanged();
-              stateWatcher.onTpPipsChanged();
-            },
+            onChanged: stateWatcher.onEntryPriceChanged,
             textInputAction: TextInputAction.next,
             onSubmitted: (_) => stateWatcher.calculate(),
           ),
@@ -53,7 +47,7 @@ class EntryPriceAndOrderSwitch extends StatelessWidget {
               ),
               onChanged: (bool value) {
                 stateWatcher.longOrder = value;
-                stateWatcher.cache(longOrderKey, value.toString());
+                stateWatcher.cache(FieldId.longOrder, value.toString());
 
                 if (stateWatcher.entryPriceController.text.isNotEmpty) {
                   stateWatcher.onSlPipsChanged();

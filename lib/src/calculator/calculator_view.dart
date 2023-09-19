@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'calculator.dart';
 
-import 'package:risk_calculator/src/widgets/default_app_bar.dart';
+import 'calculator.dart';
 
 class CalculatorView extends ConsumerStatefulWidget {
   const CalculatorView({super.key});
@@ -29,56 +28,95 @@ class _CalculatorViewState extends ConsumerState<CalculatorView> {
         return GestureDetector(
           onTap: FocusScope.of(context).unfocus,
           child: Scaffold(
-            appBar: const DefaultAppBar(),
-            body: ListView(
-              padding: const EdgeInsets.all(16),
-              children: <Widget>[
-                CapitalRiskAndBasis(
-                  textFieldBorder: _textFieldBorder,
-                  stateWatcher: stateWatcher,
-                ),
-                const SizedBox(height: 16),
-                EntryPriceAndOrderSwitch(
-                  textFieldBorder: _textFieldBorder,
-                  flexSize: flexSize,
-                  stateWatcher: stateWatcher,
-                ),
-                const SizedBox(height: 16),
-                // TP/SL with pips
-                SlAndTpByPips(
-                  stateWatcher: stateWatcher,
-                  textFieldBorder: _textFieldBorder,
-                ),
-                // TP/SL with price
-                const SizedBox(height: 16),
-                SlAndTpByPrice(
-                  stateWatcher: stateWatcher,
-                  textFieldBorder: _textFieldBorder,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: stateWatcher.calculate,
-                  child: const Text('Calculate'),
-                ),
-                const SizedBox(height: 32),
-                Text(
-                  'Lot Size: ${stateWatcher.lot}',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 8.0),
-                Text(
-                  'Loss on SL: \$${stateWatcher.lossOnSL}',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.deepOrange),
-                ),
-                Text(
-                  'Profit on TP: \$${stateWatcher.profitOnTP}',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.lightGreen),
-                ),
-                Text(
-                  'RRR: 1 : ${stateWatcher.rrr}',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              ],
+            body: SafeArea(
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: SizedBox(
+                          height: 50,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: stateWatcher.tabLength(),
+                            separatorBuilder: (_, index) => const SizedBox(width: 16.0),
+                            itemBuilder: (_, index) {
+                              Text child =
+                                  Text('Basis ${stateWatcher.getDataOf(index)?.basis ?? '-'}');
+
+                              if (index == stateWatcher.currentTabIndex) {
+                                return OutlinedButton(
+                                  onPressed: null,
+                                  child: child,
+                                );
+                              }
+
+                              return OutlinedButton(
+                                onPressed: () {
+                                  stateWatcher.switchTabTo(index);
+                                },
+                                child: child,
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      NewTabButton(stateWatcher: stateWatcher),
+                      DeleteTabsButton(stateWatcher: stateWatcher),
+                      const InfoButton(),
+                    ],
+                  ),
+                  const SizedBox(height: 16.0),
+                  CapitalRiskAndBasis(
+                    textFieldBorder: _textFieldBorder,
+                    stateWatcher: stateWatcher,
+                  ),
+                  const SizedBox(height: 16.0),
+                  EntryPriceAndOrderSwitch(
+                    textFieldBorder: _textFieldBorder,
+                    flexSize: flexSize,
+                    stateWatcher: stateWatcher,
+                  ),
+                  const SizedBox(height: 16.0),
+                  // TP/SL with pips
+                  SlAndTpByPips(
+                    stateWatcher: stateWatcher,
+                    textFieldBorder: _textFieldBorder,
+                  ),
+                  // TP/SL with price
+                  const SizedBox(height: 16.0),
+                  SlAndTpByPrice(
+                    stateWatcher: stateWatcher,
+                    textFieldBorder: _textFieldBorder,
+                  ),
+                  const SizedBox(height: 16.0),
+                  ElevatedButton(
+                    onPressed: stateWatcher.calculate,
+                    child: const Text('Calculate'),
+                  ),
+                  const SizedBox(height: 32),
+                  Text(
+                    'Lot Size: ${stateWatcher.lot}',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8.0),
+                  Text(
+                    'Loss on SL: \$${stateWatcher.lossOnSL}',
+                    style:
+                        Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.deepOrange),
+                  ),
+                  Text(
+                    'Profit on TP: \$${stateWatcher.profitOnTP}',
+                    style:
+                        Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.lightGreen),
+                  ),
+                  Text(
+                    'RRR: 1 : ${stateWatcher.rrr}',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ],
+              ),
             ),
           ),
         );

@@ -2,17 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:risk_calculator/src/calculator/calculator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-const String entryPriceKey = 'entryPrice';
-const String capitalKey = 'capital';
-const String basisKey = 'basis';
-const String stopLossPipsKey = 'stopLossPips';
-const String takeProfitPipsKey = 'takeProfitPips';
-const String stopLossKey = 'stopLoss';
-const String takeProfitKey = 'takeProfit';
-const String riskKey = 'risk';
-const String longOrderKey = 'longOrder';
 
 final calculatorViewModel = ChangeNotifierProvider.autoDispose(
   (ref) => CalculatorViewModel(),
@@ -73,32 +65,135 @@ class CalculatorViewModel extends ChangeNotifier {
   bool get longOrder => _longOrder;
 
   void init() {
-    SharedPreferences.getInstance().then((SharedPreferences prefs) {
-      capitalController.text = prefs.getString(capitalKey) ?? '';
-      basisController.text = prefs.getString(basisKey) ?? '2';
-      basis = int.tryParse(basisController.text) ?? 2;
-      entryPriceController.text = prefs.getString(entryPriceKey) ?? '';
-      stopLossPipsController.text = prefs.getString(stopLossPipsKey) ?? '';
-      takeProfitPipsController.text = prefs.getString(takeProfitPipsKey) ?? '';
-      stopLossController.text = prefs.getString(stopLossKey) ?? '';
-      takeProfitController.text = prefs.getString(takeProfitKey) ?? '';
-      riskController.text = prefs.getString(riskKey) ?? '1';
-      longOrder = prefs.getString(longOrderKey) == 'true';
+    _openHiveBox().then((_) {
+      SharedPreferences.getInstance().then((SharedPreferences prefs) {
+        // load previous tab
+        final int? tabIndex = prefs.getInt('tabIndex');
 
-      onBasisChanged(basisController.text);
-      calculate();
+        if (tabIndex != null) {
+          loadTab(tabIndex);
+        }
+        notifyListeners();
+      });
     });
+  }
+
+  Box<CalculatorDataModel>? _tabsBox;
+
+  Future<void> _openHiveBox() async {
+    _tabsBox = await Hive.openBox('tabs');
+
+    int length = tabLength();
+
+    // create a new tab if there is no tab
+    if (length < 1) {
+      await newTab();
+    }
+  }
+
+  CalculatorDataModel _defaultTabData = CalculatorDataModel(
+    basis: '2',
+    capital: '',
+    entryPrice: '',
+    longOrder: 'true',
+    risk: '5',
+    stopLoss: '',
+    stopLossPips: '',
+    takeProfit: '',
+    takeProfitPips: '',
+  );
+
+  set defaultTabData(CalculatorDataModel value) {
+    _defaultTabData = value;
+  }
+
+  CalculatorDataModel currentTabData = CalculatorDataModel(
+    basis: '2',
+    capital: '',
+    entryPrice: '',
+    longOrder: 'true',
+    risk: '5',
+    stopLoss: '',
+    stopLossPips: '',
+    takeProfit: '',
+    takeProfitPips: '',
+  );
+  int currentTabIndex = 0;
+
+  void loadTab(int tabIndex) {
+    if (_tabsBox == null) return;
+
+    CalculatorDataModel? data = _tabsBox?.getAt(tabIndex);
+
+    if (data == null) return;
+
+    currentTabData = data;
+    currentTabIndex = tabIndex;
+    SharedPreferences.getInstance().then((SharedPreferences prefs) {
+      // save tab
+      prefs.setInt('tabIndex', tabIndex);
+    });
+
+    capitalController.text = currentTabData.capital ?? '';
+    basisController.text = currentTabData.basis ?? '2';
+    basis = int.tryParse(basisController.text) ?? 2;
+    entryPriceController.text = currentTabData.entryPrice ?? '';
+    stopLossPipsController.text = currentTabData.stopLossPips ?? '';
+    takeProfitPipsController.text = currentTabData.takeProfitPips ?? '';
+    stopLossController.text = currentTabData.stopLoss ?? '';
+    takeProfitController.text = currentTabData.takeProfit ?? '';
+    riskController.text = currentTabData.risk ?? '1';
+    longOrder = currentTabData.longOrder == 'true';
+
+    onBasisChanged(basisController.text);
+  }
+
+  CalculatorDataModel? getDataOf(int index){
+    return _tabsBox?.values.elementAt(index);
+  }
+
+  Future<void> saveTab(int tabIndex) async {
+    await _tabsBox?.putAt(tabIndex, currentTabData);
+  }
+
+  Future<void> newTab() async {
+    if (_defaultTabData == currentTabData) return;
+
+    if (tabLength() == 0) {
+      await _tabsBox?.add(_defaultTabData);
+    } else {
+      await saveTab(currentTabIndex);
+      await _tabsBox?.add(_defaultTabData);
+    }
+
+    loadTab(tabLength() - 1);
+  }
+
+  Future<void> switchTabTo(int tabIndex) async {
+    await saveTab(currentTabIndex);
+
+    loadTab(tabIndex);
+  }
+
+  Future<void> deleteBox() async {
+    await _tabsBox?.deleteFromDisk();
+    init();
+    notifyListeners();
+  }
+
+  int tabLength() {
+    return _tabsBox?.length ?? 0;
   }
 
   void calculate() {
     final double capital = double.tryParse(capitalController.text) ?? 0.0;
-    final double stopLossPips =
-        double.tryParse(stopLossPipsController.text) ?? 0.0;
-    final double takeProfitPips =
-        double.tryParse(takeProfitPipsController.text) ?? 0.0;
+    final double stopLossPips = double.tryParse(stopLossPipsController.text) ?? 0.0;
+    final double takeProfitPips = double.tryParse(takeProfitPipsController.text) ?? 0.0;
     final double risk = (double.tryParse(riskController.text) ?? 0.0) / 100;
 
     // calculate lot size based on risk and stoploss level
+    if (pipsIteration == 0 || stopLossPips == 0 || takeProfitPips == 0) return;
+
     lot = (capital * risk) / stopLossPips;
 
     // round lot to pipsIteration decimal places
@@ -133,11 +228,11 @@ class CalculatorViewModel extends ChangeNotifier {
 
     double entryPrice = double.tryParse(entryPriceController.text) ?? 0.0;
     entryPriceController.text = entryPrice.toStringAsFixed(basis);
-    cache(entryPriceKey, entryPrice.toStringAsFixed(basis));
+    cache(FieldId.entryPrice, entryPrice.toStringAsFixed(basis));
 
     onSlPipsChanged();
     onTpPipsChanged();
-    cache(basisKey, value);
+    cache(FieldId.basis, value);
 
     calculate();
   }
@@ -149,7 +244,7 @@ class CalculatorViewModel extends ChangeNotifier {
       newValue = '100';
     }
 
-    cache(riskKey, newValue);
+    cache(FieldId.risk, newValue);
     calculate();
   }
 
@@ -160,8 +255,8 @@ class CalculatorViewModel extends ChangeNotifier {
     if (!longOrder) pips = (stopLoss - entryPrice) / pipsIteration;
     final String pipsInString = pips.toInt().toString();
 
-    cache(stopLossPipsKey, pipsInString);
-    cache(stopLossKey, stopLoss.toStringAsFixed(basis));
+    cache(FieldId.stopLossPips, pipsInString);
+    cache(FieldId.stopLoss, stopLoss.toStringAsFixed(basis));
 
     stopLossPipsController.text = pipsInString;
   }
@@ -173,8 +268,8 @@ class CalculatorViewModel extends ChangeNotifier {
     double price = entryPrice - stopLoss;
     if (!longOrder) price = entryPrice + stopLoss;
 
-    cache(stopLossKey, price.toStringAsFixed(basis));
-    cache(stopLossPipsKey, stopLossPips.toString());
+    cache(FieldId.stopLoss, price.toStringAsFixed(basis));
+    cache(FieldId.stopLossPips, stopLossPips.toString());
 
     stopLossController.text = price.toStringAsFixed(basis);
   }
@@ -186,8 +281,8 @@ class CalculatorViewModel extends ChangeNotifier {
     if (!longOrder) pips = (entryPrice - takeProfit) / pipsIteration;
     final String pipsInString = pips.toInt().toString();
 
-    cache(takeProfitPipsKey, pipsInString);
-    cache(takeProfitKey, takeProfit.toStringAsFixed(basis));
+    cache(FieldId.takeProfitPips, pipsInString);
+    cache(FieldId.takeProfit, takeProfit.toStringAsFixed(basis));
 
     takeProfitPipsController.text = pipsInString;
   }
@@ -199,32 +294,68 @@ class CalculatorViewModel extends ChangeNotifier {
     double price = entryPrice + takeProfit;
     if (!longOrder) price = entryPrice - takeProfit;
 
-    cache(takeProfitKey, price.toStringAsFixed(basis));
-    cache(takeProfitPipsKey, takeProfitPips.toString());
+    cache(FieldId.takeProfit, price.toStringAsFixed(basis));
+    cache(FieldId.takeProfitPips, takeProfitPips.toString());
 
     takeProfitController.text = price.toStringAsFixed(basis);
   }
 
-  void cache(String key, String value) {
-    SharedPreferences.getInstance().then(
-      (SharedPreferences prefs) => prefs.setString(key, value),
-    );
+  void onEntryPriceChanged(String value) {
+    final double entryPrice = double.tryParse(value) ?? 0.0;
+    editable = value.isEmpty;
+    cache(FieldId.entryPrice, entryPrice.toStringAsFixed(basis));
+
+    onSlPipsChanged();
+    onTpPipsChanged();
   }
 
-  void incrementValueByBasisPoint(
-    TextEditingController textEditingController, {
-    int? basisValue,
-  }) {
+  void renameTab(String name) {
+    cache(FieldId.name, name);
+  }
+
+  void cache(FieldId key, String value) {
+    switch (key) {
+      case FieldId.entryPrice:
+        currentTabData.entryPrice = value;
+        break;
+      case FieldId.capital:
+        currentTabData.capital = value;
+        break;
+      case FieldId.basis:
+        currentTabData.basis = value;
+        break;
+      case FieldId.stopLossPips:
+        currentTabData.stopLossPips = value;
+        break;
+      case FieldId.takeProfitPips:
+        currentTabData.takeProfitPips = value;
+        break;
+      case FieldId.stopLoss:
+        currentTabData.stopLoss = value;
+        break;
+      case FieldId.takeProfit:
+        currentTabData.takeProfit = value;
+        break;
+      case FieldId.risk:
+        currentTabData.risk = value;
+        break;
+      case FieldId.longOrder:
+        currentTabData.longOrder = value;
+        break;
+      default:
+    }
+
+    saveTab(currentTabIndex);
+  }
+
+  void incrementValueByBasisPoint(TextEditingController textEditingController, {int? basisValue}) {
     basisValue ??= basis;
     textEditingController.text =
         ((double.tryParse(textEditingController.text) ?? 0.0) + pipsIteration)
             .toStringAsFixed(basisValue);
   }
 
-  void decrementValueByBasisPoint(
-    TextEditingController textEditingController, {
-    int? basisValue,
-  }) {
+  void decrementValueByBasisPoint(TextEditingController textEditingController, {int? basisValue}) {
     basisValue ??= basis;
     textEditingController.text =
         ((double.tryParse(textEditingController.text) ?? 0.0) - pipsIteration)

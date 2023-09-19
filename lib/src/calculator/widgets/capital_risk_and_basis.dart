@@ -27,7 +27,7 @@ class CapitalRiskAndBasis extends StatelessWidget {
             keyboardType: const TextInputType.numberWithOptions(
               decimal: true,
             ),
-            onChanged: (String value) => stateWatcher.cache(capitalKey, value),
+            onChanged: (String value) => stateWatcher.cache(FieldId.capital, value),
             textInputAction: TextInputAction.next,
             onSubmitted: (_) => stateWatcher.calculate(),
           ),

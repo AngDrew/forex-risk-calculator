@@ -2,10 +2,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:risk_calculator/src/calculator/models/calculator_data_model.dart';
 
 import 'src/calculator/calculator_view.dart';
 
-void main() {
+Future<void> main() async {
+  await Hive.initFlutter();
+  Hive.registerAdapter(CalculatorDataModelAdapter());
+
   runApp(const ProviderScope(child: MyApp()));
 }
 

@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'src/calculators/calculator_view.dart';
+import 'src/calculator/calculator_view.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));

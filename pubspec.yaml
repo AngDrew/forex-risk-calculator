@@ -36,6 +36,7 @@ dependencies:
 
 dev_dependencies:
   change_app_package_name: ^1.1.0
+  dart_code_metrics_presets: ^2.4.0
   flutter_launcher_icons: ^0.13.1
   flutter_lints: ^2.0.0
   flutter_test:

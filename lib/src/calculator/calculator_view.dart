@@ -68,17 +68,11 @@ class _CalculatorViewState extends ConsumerState<CalculatorView> {
                 const SizedBox(height: 8.0),
                 Text(
                   'Loss on SL: \$${stateWatcher.lossOnSL}',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(color: Colors.deepOrange),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.deepOrange),
                 ),
                 Text(
                   'Profit on TP: \$${stateWatcher.profitOnTP}',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(color: Colors.lightGreen),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.lightGreen),
                 ),
                 Text(
                   'RRR: 1 : ${stateWatcher.rrr}',
